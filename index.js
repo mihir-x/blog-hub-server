@@ -29,6 +29,7 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
         const blogCollection = client.db('blogDB').collection('blogs')
+        const commentCollection = client.db('blogDB').collection('comments')
 
         //get blog data from database 
         app.get('/api/v1/blogs', async (req, res) => {
@@ -73,6 +74,13 @@ async function run() {
                 }
             }
             const result = await blogCollection.updateOne(query, updatedBlog, options)
+            res.send(result)
+        })
+
+        //post comment
+        app.post('/api/v1/comments', async(req, res)=>{
+            const comment = req.body
+            const result = await commentCollection.insertOne(comment)
             res.send(result)
         })
 
