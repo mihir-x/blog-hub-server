@@ -28,7 +28,18 @@ async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
+        const blogCollection = client.db('blogDB').collection('blogs')
 
+        app.get('/api/v1/blogs', async(req, res)=>{
+            const result = blogCollection.find().toArray()
+            res.send(result)
+        })
+
+        app.post('/api/v1/addblog', async(req, res)=>{
+            const blog = req.body
+            const result = await blogCollection.insertOne(blog)
+            res.send(result)
+        })
 
 
         // Send a ping to confirm a successful connection
