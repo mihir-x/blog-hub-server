@@ -79,7 +79,13 @@ async function run() {
 
         //get comment
         app.get('/api/v1/comments', async(req, res)=>{
-            const result = await commentCollection.find().toArray()
+            let query = {}
+            if(req.query?.blogId){
+                query = {
+                    blogId: req.query.blogId
+                }
+            }
+            const result = await commentCollection.find(query).toArray()
             res.send(result)
         })
 
