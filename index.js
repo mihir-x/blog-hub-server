@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 
 const app = express()
@@ -30,14 +30,49 @@ async function run() {
         // await client.connect();
         const blogCollection = client.db('blogDB').collection('blogs')
 
-        app.get('/api/v1/blogs', async(req, res)=>{
-            const result = blogCollection.find().toArray()
+        //get blog data from database 
+        app.get('/api/v1/blogs', async (req, res) => {
+            const result = await blogCollection.find().toArray()
             res.send(result)
         })
 
-        app.post('/api/v1/addblog', async(req, res)=>{
+        //add blog to database
+        app.post('/api/v1/addblog', async (req, res) => {
             const blog = req.body
             const result = await blogCollection.insertOne(blog)
+            res.send(result)
+        })
+
+        //find individual blog
+        app.get('/api/v1/blogs/:id', async (req, res) => {
+            const id = req.params.id
+            const query = {
+                _id: new ObjectId(id)
+            }
+            const result = await blogCollection.findOne(query)
+            res.send(result)
+        })
+
+        //update blog
+        app.put('/api/v1/blogs/:id', async (req, res) => {
+            const id = req.params.id
+            const data = req.body
+            const query = {
+                _id: new ObjectId(id)
+            }
+            const options = { upsert: true }
+            const updatedBlog = {
+                $set: {
+                    title: data.title,
+                    category: data.category,
+                    photo: data.photo,
+                    shortDescription: data.shortDescription,
+                    longDescription: data.longDescription,
+                    postDate: data.postDate,
+                    owner: data.owner
+                }
+            }
+            const result = await blogCollection.updateOne(query, updatedBlog, options)
             res.send(result)
         })
 
