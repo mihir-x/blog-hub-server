@@ -17,6 +17,7 @@ app.use(cors({
     credentials: true
 }))
 app.use(express.json())
+app.use(cookieParser())
 
 
 
@@ -32,6 +33,22 @@ const client = new MongoClient(uri, {
     }
 });
 
+//jwt related middleware
+const verifyToken = (req, res, next) =>{
+    const token = req.cookies?.token
+    if(!token){
+        return res.status(401).send({message: 'Invalid Authorization'})
+    }
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRETE, (err, decode) =>{
+        if(err){
+            return res.status(401).send({message: 'You are not authorized'})
+        }
+        req.user = decode //attaching decoded user in the req so we can use this to verify personal data related api
+        next()
+    })
+}
+
+
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
@@ -46,12 +63,12 @@ async function run() {
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRETE, {expiresIn: '2h'})
             res.cookie('token', token, {
                 httpOnly: true,
-                secure: true
+                secure: false,
             }).send({success: true})
         })
 
         //get blog data from database 
-        app.get('/api/v1/blogs', async (req, res) => {
+        app.get('/api/v1/blogs',verifyToken, async (req, res) => {
             const result = await blogCollection.find().toArray()
             res.send(result)
         })
