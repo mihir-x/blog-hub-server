@@ -100,9 +100,9 @@ async function run() {
         //get wishlist
         app.get('/api/v1/wishlists', async(req,res)=>{
             let query = {}
-            if(req.query?.user){
+            if(req.query?.owner){
                 query = {
-                    user: req.query.user
+                    owner: req.query.owner
                 }
             }
             const result = await wishlistCollection.find(query).toArray()
@@ -112,6 +112,15 @@ async function run() {
         app.post('/api/v1/wishlists', async(req, res)=>{
             const wishlist = req.body
             const result = await wishlistCollection.insertOne(wishlist)
+            res.send(result)
+        })
+        //delete a blog from wishlist
+        app.delete('/api/v1/wishlists/:id', async(req,res)=>{
+            const id = req.params.id
+            const query = {
+                _id: new ObjectId(id)
+            }
+            const result = await wishlistCollection.deleteOne(query)
             res.send(result)
         })
 
