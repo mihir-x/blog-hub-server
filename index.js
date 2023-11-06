@@ -2,12 +2,20 @@ const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
+const jwt = require('jsonwebtoken')
+const cookieParser = require('cookie-parser')
+
 
 const app = express()
 const port = process.env.PORT || 5000
 
 //middleware
-app.use(cors())
+app.use(cors({
+    origin: [
+        'http://localhost:5173'
+    ],
+    credentials: true
+}))
 app.use(express.json())
 
 
@@ -31,6 +39,16 @@ async function run() {
         const blogCollection = client.db('blogDB').collection('blogs')
         const commentCollection = client.db('blogDB').collection('comments')
         const wishlistCollection = client.db('blogDB').collection('wishlists')
+
+        //jwt related api
+        app.post('/api/v1/jwt', async(req, res) =>{
+            const user = req.body
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRETE, {expiresIn: '2h'})
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: true
+            }).send({success: true})
+        })
 
         //get blog data from database 
         app.get('/api/v1/blogs', async (req, res) => {
