@@ -98,6 +98,16 @@ async function run() {
         })
 
         //get wishlist
+        app.get('/api/v1/wishlists', async(req,res)=>{
+            let query = {}
+            if(req.query?.user){
+                query = {
+                    user: req.query.user
+                }
+            }
+            const result = await wishlistCollection.find(query).toArray()
+            res.send(result)
+        })
         //post wishlist
         app.post('/api/v1/wishlists', async(req, res)=>{
             const wishlist = req.body
