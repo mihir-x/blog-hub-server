@@ -30,6 +30,7 @@ async function run() {
         // await client.connect();
         const blogCollection = client.db('blogDB').collection('blogs')
         const commentCollection = client.db('blogDB').collection('comments')
+        const wishlistCollection = client.db('blogDB').collection('wishlists')
 
         //get blog data from database 
         app.get('/api/v1/blogs', async (req, res) => {
@@ -93,6 +94,14 @@ async function run() {
         app.post('/api/v1/comments', async(req, res)=>{
             const comment = req.body
             const result = await commentCollection.insertOne(comment)
+            res.send(result)
+        })
+
+        //get wishlist
+        //post wishlist
+        app.post('/api/v1/wishlists', async(req, res)=>{
+            const wishlist = req.body
+            const result = await wishlistCollection.insertOne(wishlist)
             res.send(result)
         })
 
