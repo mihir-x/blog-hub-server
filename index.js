@@ -37,6 +37,26 @@ async function run() {
             const result = await blogCollection.find().toArray()
             res.send(result)
         })
+        //get featured blog from database
+        app.get('/api/v1/blogs/sorted', async(req, res) =>{
+            // const result = await blogCollection.find().sort({"longDescription.length": -1 }).limit(10).toArray()
+            const result = await blogCollection.aggregate([
+                {
+                    $addFields: {
+                        descriptionLength: { $strLenCP: "$longDescription"}
+                    }
+                },
+                {
+                    $sort: {
+                        descriptionLength: -1
+                    }
+                },
+                {
+                    $limit: 10
+                }
+            ]).toArray()
+            res.send(result)
+        })
 
         //add blog to database
         app.post('/api/v1/addblog', async (req, res) => {
