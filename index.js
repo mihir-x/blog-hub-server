@@ -57,6 +57,11 @@ async function run() {
             ]).toArray()
             res.send(result)
         })
+        //get recent blog from database
+        app.get('/api/v1/recent', async(req, res) =>{
+            const result = await blogCollection.find().sort({"postDate": -1}).limit(6).toArray()
+            res.send(result)
+        })
 
         //add blog to database
         app.post('/api/v1/addblog', async (req, res) => {
