@@ -12,7 +12,9 @@ const port = process.env.PORT || 5000
 //middleware
 app.use(cors({
     origin: [
-        'http://localhost:5173'
+        'http://localhost:5173',
+        'https://blog-website-5936b.web.app',
+        'https://blog-website-5936b.firebaseapp.com'
     ],
     credentials: true
 }))
@@ -63,12 +65,17 @@ async function run() {
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRETE, {expiresIn: '2h'})
             res.cookie('token', token, {
                 httpOnly: true,
-                secure: false,
+                secure: true,
+                sameSite: 'none'
             }).send({success: true})
+        })
+        //clear cookies upon logout
+        app.post('/api/v1/jwt/logout', async(req, res)=>{
+            res.clearCookie('token', {maxAge: 0, secure: true, sameSite: 'none'}).send({success: true})
         })
 
         //get blog data from database 
-        app.get('/api/v1/blogs',verifyToken, async (req, res) => {
+        app.get('/api/v1/blogs', async (req, res) => {
             const result = await blogCollection.find().toArray()
             res.send(result)
         })
@@ -99,14 +106,14 @@ async function run() {
         })
 
         //add blog to database
-        app.post('/api/v1/addblog', async (req, res) => {
+        app.post('/api/v1/addblog',verifyToken, async (req, res) => {
             const blog = req.body
             const result = await blogCollection.insertOne(blog)
             res.send(result)
         })
 
         //find individual blog
-        app.get('/api/v1/blogs/:id', async (req, res) => {
+        app.get('/api/v1/blogs/:id',verifyToken, async (req, res) => {
             const id = req.params.id
             const query = {
                 _id: new ObjectId(id)
@@ -156,9 +163,32 @@ async function run() {
             const result = await commentCollection.insertOne(comment)
             res.send(result)
         })
+        //get the most commented post /currently not using
+        // app.get('/api/v1/popular', async(req, res) =>{
+        //     const result = await commentCollection.aggregate([
+        //         {
+        //             $group: {
+        //                 _id: '$blogId',
+        //                 count: {$sum: 1}
+        //             }
+        //         },
+        //         {
+        //             $sort: {
+        //                 count: -1
+        //             }
+        //         },
+        //         {
+        //             $limit: 1
+        //         }
+        //     ]).toArray()
+        //     res.send(result)
+        // })
 
         //get wishlist
-        app.get('/api/v1/wishlists', async(req,res)=>{
+        app.get('/api/v1/wishlists',verifyToken, async(req,res)=>{
+            if(req.user?.email!== req.query?.owner){
+                return res.status(403).send({message: 'forbidden access'})
+            }
             let query = {}
             if(req.query?.owner){
                 query = {
@@ -175,7 +205,7 @@ async function run() {
             res.send(result)
         })
         //delete a blog from wishlist
-        app.delete('/api/v1/wishlists/:id', async(req,res)=>{
+        app.delete('/api/v1/wishlists/:id',  async(req,res)=>{
             const id = req.params.id
             const query = {
                 _id: new ObjectId(id)
