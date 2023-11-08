@@ -14,7 +14,7 @@ app.use(cors({
     origin: [
         'http://localhost:5173',
         'https://blog-website-5936b.web.app',
-        'https://blog-website-5936b.firebaseapp.com',
+        'https://654b83f59a6aef13e78873f0--gorgeous-kitten-b026ab.netlify.app',
         'https://gorgeous-kitten-b026ab.netlify.app'
     ],
     credentials: true
