@@ -164,26 +164,34 @@ async function run() {
             const result = await commentCollection.insertOne(comment)
             res.send(result)
         })
-        //get the most commented post /currently not using
-        // app.get('/api/v1/popular', async(req, res) =>{
-        //     const result = await commentCollection.aggregate([
-        //         {
-        //             $group: {
-        //                 _id: '$blogId',
-        //                 count: {$sum: 1}
-        //             }
-        //         },
-        //         {
-        //             $sort: {
-        //                 count: -1
-        //             }
-        //         },
-        //         {
-        //             $limit: 1
-        //         }
-        //     ]).toArray()
-        //     res.send(result)
-        // })
+
+
+
+        //get the top blogger
+        app.get('/api/v1/topblogger', async(req, res) =>{
+            const result = await blogCollection.aggregate([
+                {
+                    $group: {
+                        // _id: '$blogId',
+                        _id: {owner: '$owner', ownerName: '$ownerName', ownerPhoto: '$ownerPhoto'},
+                        count: {$sum: 1}
+                    }
+                },
+                {
+                    $sort: {
+                        count: -1
+                    }
+                },
+                {
+                    $limit: 3
+                }
+            ]).toArray()
+            res.send(result)
+        })
+
+
+
+
 
         //get wishlist
         app.get('/api/v1/wishlists',verifyToken, async(req,res)=>{
