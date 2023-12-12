@@ -158,6 +158,19 @@ async function run() {
             const result = await blogCollection.updateOne(query,updatedBlog, options)
             res.send(result)
         })
+        //update dislike
+        app.put('/api/v1/blogs/dislike/:id', async(req, res) =>{
+            const id = req.params.id
+            const query = {
+                _id: new ObjectId(id)
+            }
+            const options = {upsert: true}
+            const updatedBlog = {
+                $inc: { dislike: 1 }
+            }
+            const result = await blogCollection.updateOne(query,updatedBlog, options)
+            res.send(result)
+        })
 
         //get comment
         app.get('/api/v1/comments', async(req, res)=>{
